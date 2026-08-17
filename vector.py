@@ -9,6 +9,7 @@ import shutil
 # Load CSV
 # -----------------------------
 df = pd.read_excel("products_cleaned.xlsx")
+df = df.drop(columns=["Unnamed: 7"], errors="ignore")
 
 df = df.fillna("")
 df = df.drop(columns=["Unnamed: 7"], errors="ignore")
@@ -112,5 +113,5 @@ print("Documents in database:",
 # Retriever
 # -----------------------------
 retriever = vector_store.as_retriever(
-    search_kwargs={"k": 5}
+    search_kwargs={"k": 10}
 )
