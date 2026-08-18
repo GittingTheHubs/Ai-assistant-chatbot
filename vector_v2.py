@@ -1,25 +1,3 @@
-"""
-vector_v2.py
-------------
-Drop-in replacement for vector.py that actually USES the enriched columns.
-Left as a separate file so the original vector.py keeps working.
-
-To switch over, change one line in main.py:
-    from vector import retriever      ->  from vector_v2 import retriever
-
-Three changes that matter:
-
-1. Embeds Title + Summary + Keywords + Features FIRST, description last.
-   The old version embedded a 28,000-character description, which drowns
-   the signal -- the meaningful words get averaged into noise.
-
-2. Keywords are bilingual, so a Thai question can match an English product.
-
-3. Uses MMR search so 5 results aren't 5 tiers of the same product.
-   The old version returned zcrLog Cloud 1/2/3/ICT1/ICT2 for every
-   log-related question.
-"""
-
 import os
 import shutil
 
@@ -28,30 +6,68 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 
+
 SRC = "products_enriched.csv"
 DB_LOCATION = "./chroma_v2_db"
-REBUILD_DB = False
-DESC_CHARS = 1500  # cap description so it can't drown the summary
 
-df = pd.read_csv(SRC).fillna("")
+# IMPORTANT:
+# Set True ONCE if you want to rebuild the database after changing
+# products_enriched.csv or changing the embedding/content structure.
+REBUILD_DB = False
+
+DESC_CHARS = 1500
+
+
+# ============================================================
+# LOAD DATA
+# ============================================================
+
+df = pd.read_csv(SRC, encoding="utf-8-sig").fillna("")
+
 print(f"Loaded {len(df)} products, {len(df.columns)} columns")
 
-embeddings = OllamaEmbeddings(model="mxbai-embed-large")
+
+# ============================================================
+# EMBEDDING MODEL
+# ============================================================
+
+embeddings = OllamaEmbeddings(
+    model="mxbai-embed-large"
+)
+
+
+# ============================================================
+# REBUILD VECTOR DATABASE
+# ============================================================
 
 if REBUILD_DB and os.path.exists(DB_LOCATION):
     print("Deleting old database...")
     shutil.rmtree(DB_LOCATION)
 
 
+# ============================================================
+# BUILD SEARCH CONTENT
+# ============================================================
+
 def build_content(row):
-    """Signal first, bulk text last."""
-    parts = [f"Product: {row['Title']}"]
+    """
+    Put important semantic information first.
+    Keep the large description at the end and truncate it.
+    """
+
+    parts = [
+        f"Product: {row['Title']}"
+    ]
 
     def add(label, key):
         val = str(row.get(key, "")).strip()
-        if val:
-            parts.append(f"{label}: {val}")
 
+        if val:
+            parts.append(
+                f"{label}: {val}"
+            )
+
+    # Important semantic information first
     add("Summary", "Summary_TH")
     add("Summary (EN)", "Summary_EN")
     add("Category", "Category")
@@ -64,39 +80,93 @@ def build_content(row):
     add("Vendor", "Vendor")
     add("Price", "Price_Display")
 
-    variants = str(row.get("Variants", "")).strip()
-    if variants:
-        parts.append(f"Pricing Tiers: {variants[:800]}")
+    # Pricing tiers
+    variants = str(
+        row.get("Variants", "")
+    ).strip()
 
-    desc = str(row.get("Description", "")).strip()
+    if variants:
+        parts.append(
+            f"Pricing Tiers: {variants[:800]}"
+        )
+
+    # Description LAST
+    desc = str(
+        row.get("Description", "")
+    ).strip()
+
     if desc:
-        parts.append(f"Details: {desc[:DESC_CHARS]}")
+        parts.append(
+            f"Details: {desc[:DESC_CHARS]}"
+        )
 
     return "\n".join(parts)
 
 
+# ============================================================
+# CREATE DOCUMENTS
+# ============================================================
+
 documents = []
+
 for i, row in df.iterrows():
-    if not str(row["Title"]).strip():
+
+    title = str(
+        row.get("Title", "")
+    ).strip()
+
+    if not title:
         continue
+
     documents.append(
         Document(
             page_content=build_content(row),
+
             metadata={
-                "title": str(row["Title"]),
-                "vendor": str(row.get("Vendor", "")),
-                "category": str(row.get("Category", "")),
-                "product_type": str(row.get("Product_Type", "")),
-                "best_for": str(row.get("Best_For", "")),
-                "deployment": str(row.get("Deployment", "")),
-                "price": str(row.get("Price_Display", "")),
-                "url": str(row.get("URL", "")),
+                "title": title,
+
+                "vendor": str(
+                    row.get("Vendor", "")
+                ),
+
+                "category": str(
+                    row.get("Category", "")
+                ),
+
+                "product_type": str(
+                    row.get("Product_Type", "")
+                ),
+
+                "best_for": str(
+                    row.get("Best_For", "")
+                ),
+
+                "deployment": str(
+                    row.get("Deployment", "")
+                ),
+
+                "price": str(
+                    row.get("Price_Display", "")
+                ),
+
+                "url": str(
+                    row.get("URL", "")
+                ),
             },
+
             id=str(i),
         )
     )
 
-print(f"Documents created: {len(documents)}")
+
+print(
+    f"Documents created: {len(documents)}"
+)
+
+
+# ============================================================
+# CHROMA VECTOR STORE
+# ============================================================
 
 vector_store = Chroma(
     collection_name="product_database_v2",
@@ -104,21 +174,62 @@ vector_store = Chroma(
     embedding_function=embeddings,
 )
 
+
+# ============================================================
+# BUILD DATABASE IF EMPTY
+# ============================================================
+
 if vector_store._collection.count() == 0:
+
     print("Building vector database...")
+
     batch_size = 25
-    for i in range(0, len(documents), batch_size):
-        batch = documents[i:i + batch_size]
-        print(f"  Embedding {i + 1} - {min(i + batch_size, len(documents))}")
-        vector_store.add_documents(batch)
+
+    for i in range(
+        0,
+        len(documents),
+        batch_size
+    ):
+
+        batch = documents[
+            i:i + batch_size
+        ]
+
+        print(
+            f"  Embedding {i + 1} - "
+            f"{min(i + batch_size, len(documents))}"
+        )
+
+        vector_store.add_documents(
+            batch
+        )
+
     print("Done!")
+
 else:
-    print("Database already exists. Skipping embedding.")
 
-print("Documents in database:", vector_store._collection.count())
+    print(
+        "Database already exists. "
+        "Skipping embedding."
+    )
 
-# MMR = relevance + diversity, so you don't get 5 tiers of the same product
+
+print(
+    "Documents in database:",
+    vector_store._collection.count()
+)
+
+
+# ============================================================
+# MMR RETRIEVER
+# ============================================================
+
 retriever = vector_store.as_retriever(
     search_type="mmr",
-    search_kwargs={"k": 6, "fetch_k": 25, "lambda_mult": 0.6},
+
+    search_kwargs={
+        "k": 6,
+        "fetch_k": 25,
+        "lambda_mult": 0.6,
+    },
 )
