@@ -673,4 +673,12 @@ Products I looked at:
 **AFTER V5 (FIX Q6)**
 
 Q6: โปรแกรมป้องกันข้อมูลรั่วไหล
-Ans: 
+Ans: จากคำถามของคุณ เราไม่มีผลิตภัณฑ์ที่ตรงกับโปรแกรมป้องกันข้อมูลรั่วไหลในรายการของเรา แต่หากคุณสนใจผลิตภัณฑ์ด้านความปลอดภัยอื่น ๆ เช่น Managed Security Service หรือ OneTrust Universal Consent & Preferences Management สามารถสอบถามรายละเอียดเพิ่มเติมได้ที่ฝ่ายขายของเรานะครับ/ Ladies and gentlemen, based on your request, we do not have a product specifically for data leakage prevention. However, if you are interested in other security solutions such as Managed Security Service or OneTrust Universal Consent & Preferences Management, please feel free to contact our sales team for more details.
+
+Products I looked at:
+  1. บริการ SOC สำหรับ 50 Client (รายเดือน) = 30,000 THB
+  2. Lark Starter = ติดต่อสอบถาม / Contact for pricing
+  3. Datadog Real User Monitoring (Browser RUM) = 52 THB
+  4. OneTrust Universal Consent & Preferences Management (250K Data Subjects) = ติดต่อสอบถาม / Contact for pricing
+  5. ระบบจัดเก็บ Log Filie (งบราชการ) = 16,000 - 42,000 THB
+  6. Rapid7 Nexpose = 1,000,000 THB
