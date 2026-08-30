@@ -116,6 +116,38 @@ st.markdown(
             font-style: italic;
         }
 
+        /* The comparison engine answers with a markdown table.
+           text_to_html() turns it into a real <table>; this is what
+           makes it look like one. */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 4px 0 10px 0;
+        }
+        .table-wrap:last-child { margin-bottom: 0; }
+
+        .bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        .bubble th, .bubble td {
+            border: 1px solid #DDE1EC;
+            padding: 6px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .bubble th {
+            background: #E8ECF7;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .bubble tbody tr:nth-child(even) td {
+            background: #FAFBFE;
+        }
+
+        /* A three-column table needs more room than a sentence does. */
+        .bubble.assistant:has(table) { max-width: 96%; }
+
         [data-testid="stChatInput"] {
             border-radius: 14px;
         }
@@ -155,6 +187,56 @@ if "current_category" not in st.session_state:
 BULLET_RE = re.compile(r"^[•\-\*]\s+")
 NUMBERED_RE = re.compile(r"^\d+[\.\)]\s+")
 
+# A markdown table row looks like "| a | b |". The separator row
+# under the header ("| --- | --- |") carries no data.
+TABLE_ROW_RE = re.compile(r"^\|.*\|$")
+TABLE_SEP_RE = re.compile(r"^\|[\s:\-]+(\|[\s:\-]+)*\|$")
+
+
+def split_table_row(line: str):
+    """The cells of one markdown row, outer pipes dropped."""
+
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def table_to_html(rows) -> str:
+    """
+    Turn buffered markdown rows into a real <table>.
+
+    The comparison engine in main.py answers with a markdown table.
+    Streamlit's own markdown renderer never sees it, because we hand
+    it one finished HTML string per bubble, so without this the
+    pipes would show up literally.
+    """
+
+    body = [row for row in rows if not TABLE_SEP_RE.match(row)]
+
+    if not body:
+        return ""
+
+    header = "".join(
+        f"<th>{html.escape(cell)}</th>"
+        for cell in split_table_row(body[0])
+    )
+
+    lines_html = []
+
+    for row in body[1:]:
+
+        cells = "".join(
+            f"<td>{html.escape(cell)}</td>"
+            for cell in split_table_row(row)
+        )
+
+        lines_html.append(f"<tr>{cells}</tr>")
+
+    return (
+        '<div class="table-wrap"><table>'
+        f"<thead><tr>{header}</tr></thead>"
+        f"<tbody>{''.join(lines_html)}</tbody>"
+        "</table></div>"
+    )
+
 
 def text_to_html(text: str) -> str:
     text = text.strip()
@@ -162,6 +244,7 @@ def text_to_html(text: str) -> str:
 
     html_parts = []
     bullet_buffer = []
+    table_buffer = []
 
     def flush_bullets():
         if bullet_buffer:
@@ -169,7 +252,20 @@ def text_to_html(text: str) -> str:
             html_parts.append(f"<ul>{items}</ul>")
             bullet_buffer.clear()
 
+    def flush_table():
+        if table_buffer:
+            html_parts.append(table_to_html(table_buffer))
+            table_buffer.clear()
+
     for ln in lines:
+
+        if TABLE_ROW_RE.match(ln):
+            flush_bullets()
+            table_buffer.append(ln)
+            continue
+
+        flush_table()
+
         escaped = html.escape(ln)
         is_bullet = bool(BULLET_RE.match(ln) or NUMBERED_RE.match(ln))
 
@@ -182,6 +278,7 @@ def text_to_html(text: str) -> str:
             html_parts.append(f"<p>{escaped}</p>")
 
     flush_bullets()
+    flush_table()
     return "".join(html_parts)
 
 
