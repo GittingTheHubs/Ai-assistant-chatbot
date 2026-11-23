@@ -8,7 +8,18 @@ from langchain_ollama import OllamaEmbeddings
 
 
 SRC = "products_enriched.csv"
-DB_LOCATION = "./chroma_v2_db"
+
+# Override with the EMBED_MODEL env var (eval/recall_at_k.py compares
+# models). Each model keeps its own DB: vectors from different models
+# cannot share one collection.
+# bge-m3 reads Thai; mxbai-embed-large did not (Thai Recall@5 96% vs 26%,
+# eval/recall_at_k.py). First run builds its DB: `ollama pull bge-m3` first.
+EMBED_MODEL = os.environ.get("EMBED_MODEL", "bge-m3")
+DB_LOCATION = (
+    "./chroma_v2_db"
+    if EMBED_MODEL == "mxbai-embed-large"
+    else f"./chroma_{EMBED_MODEL.replace(':', '_').replace('-', '_')}_db"
+)
 
 # IMPORTANT:
 # Set True ONCE if you want to rebuild the database after changing
@@ -32,7 +43,7 @@ print(f"Loaded {len(df)} products, {len(df.columns)} columns")
 # ============================================================
 
 embeddings = OllamaEmbeddings(
-    model="mxbai-embed-large"
+    model=EMBED_MODEL
 )
 
 

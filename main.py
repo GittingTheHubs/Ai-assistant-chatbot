@@ -8,6 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama.llms import OllamaLLM
 
 from vector_v2 import retriever
+import ict68
 
 
 # ============================================================
@@ -18,7 +19,10 @@ MODEL = "qwen2.5:7b"
 
 NUM_CTX = 16384
 NUM_PREDICT = 700
-TEMPERATURE = 0.1
+# 0 + fixed seed: the same question gets the same answer
+# (charter KPI: same top product in >= 90% of 5 repeats).
+TEMPERATURE = 0.0
+SEED = 42
 
 DATASET = "products_enriched.csv"
 
@@ -205,6 +209,7 @@ INTERNAL_COLUMNS = {
 model = OllamaLLM(
     model=MODEL,
     temperature=TEMPERATURE,
+    seed=SEED,
     num_ctx=NUM_CTX,
     num_predict=NUM_PREDICT,
 )
@@ -5423,6 +5428,23 @@ def process_question(
         print(f"[DEBUG] Shortlist f/up:   {shortlist_followup}")
         print(f"[DEBUG] New search:       {new_search}")
         print(f"[DEBUG] Previous shortlist: {previous_titles}")
+
+    # ========================================================
+    # ICT68 ENGINE
+    #
+    # Government buyers ask for the DE price criteria ("ราคากลาง",
+    # "สเปค ICT68"). Answered from data/ict68/ in Python, never
+    # by the LLM, so prices and minimum specs stay exact.
+    # ========================================================
+
+    if ict68.is_ict68_query(question):
+
+        return (
+            ict68.answer(question, df, explicit_product),
+            explicit_product,
+            current_category,
+            "ICT68 Engine",
+        )
 
     # ========================================================
     # COMPARISON ENGINE
