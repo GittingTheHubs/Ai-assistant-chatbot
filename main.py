@@ -8,6 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama.llms import OllamaLLM
 
 from vector_v2 import retriever
+import ict68
 
 
 # ============================================================
@@ -5423,6 +5424,23 @@ def process_question(
         print(f"[DEBUG] Shortlist f/up:   {shortlist_followup}")
         print(f"[DEBUG] New search:       {new_search}")
         print(f"[DEBUG] Previous shortlist: {previous_titles}")
+
+    # ========================================================
+    # ICT68 ENGINE
+    #
+    # Government buyers ask for the DE price criteria ("ราคากลาง",
+    # "สเปค ICT68"). Answered from data/ict68/ in Python, never
+    # by the LLM, so prices and minimum specs stay exact.
+    # ========================================================
+
+    if ict68.is_ict68_query(question):
+
+        return (
+            ict68.answer(question, df, explicit_product),
+            explicit_product,
+            current_category,
+            "ICT68 Engine",
+        )
 
     # ========================================================
     # COMPARISON ENGINE
