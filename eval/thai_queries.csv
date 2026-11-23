@@ -1,0 +1,28 @@
+query,expected
+โปรแกรมป้องกันข้อมูลรั่วไหลออกจากองค์กร,safetica
+อยากให้พนักงานยืนยันตัวตนสองชั้นผ่านมือถือก่อนเข้าระบบ,Cisco Duo|TrustKey|JumpCloud|Yubi
+กุญแจยืนยันตัวตนแบบเสียบพอร์ต USB,TrustKey|Yubi
+ระบบฝึกอบรมพนักงานให้รู้ทันอีเมลหลอกลวง,Knowbe4|Security Awareness
+ควบคุมและจัดการมือถือของพนักงานจากส่วนกลาง,SOTI|Mobile Advanced
+โปรแกรมรีโมทเข้าเครื่องคอมพิวเตอร์จากระยะไกล,AnyDesk|RealVNC
+ป้องกันเว็บไซต์จากการโจมตีแบบ SQL injection,MontaraCloud|WAF|FortiWeb|Appspider
+ทำให้เว็บโหลดเร็วขึ้นด้วยเครือข่ายกระจายเนื้อหา,CloudFlare|CDN|Akamai
+จ้างผู้เชี่ยวชาญทดสอบเจาะระบบหาช่องโหว่,Pentest|Metasploit
+ให้พนักงานเชื่อมต่อเข้าเครือข่ายบริษัทจากบ้านอย่างปลอดภัย,SMA|Sangfor M4500|VPN
+ระบบดูแลลูกค้าและติดตามยอดขาย,Freshworks CRM
+ระบบแจ้งซ่อมและจัดการงานไอทีของ helpdesk,Freshservice
+ประชุมออนไลน์ผ่านวิดีโอกับทีม,Zoom|Teams|Lark
+สำรองข้อมูลเครื่องเสมือน VMware,Veeam|Nakivo|Backup for VMware
+เครื่องสำรองไฟสำหรับตอนไฟดับ,Syndome|Bright|Ace|Dynamic|Challenger|iPower
+จัดเก็บข้อมูลจราจรคอมพิวเตอร์ตามกฎหมาย พ.ร.บ. คอมพิวเตอร์,zcrLog|SRAN|NetEvid|Softnix|Log
+ตรวจจับและตอบสนองภัยคุกคามที่เครื่องปลายทาง,CrowdStrike|SentinelOne|EDR|Endpoint
+โปรแกรมกันไวรัสสำหรับเครื่องพนักงาน,Kaspersky|ESET|Bitdefender|Sophos|Intercept
+กรองอีเมลขยะและอีเมลฟิชชิ่ง,Proofpoint|Retarus|FortiMail|Email|grMail
+อุปกรณ์กระจายสัญญาณไวไฟในออฟฟิศ,Aruba|Ruckus
+ไฟร์วอลล์ป้องกันเครือข่ายสำหรับสำนักงานขนาดเล็ก,Forti|Sophos|WatchGuard|Palo Alto|SonicWall|Sangfor
+เฝ้าดูสถานะอุปกรณ์เครือข่ายและเซิร์ฟเวอร์,PRTG|Solarwinds|Datadog
+โปรแกรมแก้ไขไฟล์ PDF,Foxit
+ชุดโปรแกรมทำเอกสาร ตารางคำนวณ และอีเมลสำหรับบริษัท,Microsoft 365|Google Workspace|Office
+คอมพิวเตอร์พกพาสำหรับพนักงาน,ExpertBook|Latitude|ThinkPad|TravelMate|ProBook|ThinkBook
+จัดการรหัสผ่านของบัญชีผู้ดูแลระบบสิทธิ์สูง,BeyondTrust
+ติดตามภัยคุกคามไซเบอร์และข้อมูลรั่วไหลบนดาร์กเว็บ,SocRadar|Threat Intelligence

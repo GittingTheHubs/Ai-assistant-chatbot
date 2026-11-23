@@ -21,5 +21,6 @@ chroma_langchain_db/
 Thumbs.db
 # Chroma v2 + temp files
 chroma_v2_db/
+chroma_*_db/
 enrich_cache*.jsonl
 products_enriched_mixed.csv

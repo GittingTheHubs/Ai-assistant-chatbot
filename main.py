@@ -19,7 +19,10 @@ MODEL = "qwen2.5:7b"
 
 NUM_CTX = 16384
 NUM_PREDICT = 700
-TEMPERATURE = 0.1
+# 0 + fixed seed: the same question gets the same answer
+# (charter KPI: same top product in >= 90% of 5 repeats).
+TEMPERATURE = 0.0
+SEED = 42
 
 DATASET = "products_enriched.csv"
 
@@ -206,6 +209,7 @@ INTERNAL_COLUMNS = {
 model = OllamaLLM(
     model=MODEL,
     temperature=TEMPERATURE,
+    seed=SEED,
     num_ctx=NUM_CTX,
     num_predict=NUM_PREDICT,
 )
